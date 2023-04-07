@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/chrisrolling27/textGPT/issues"
   },
-  "homepage": "https://github.com/chrisrolling27/textGPT#readme"
+  "homepage": "https://github.com/chrisrolling27/textGPT#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "twilio": "^4.10.0"
+  }
 }
