@@ -18,8 +18,12 @@
   },
   "homepage": "https://github.com/chrisrolling27/textGPT#readme",
   "dependencies": {
+    "axios": "^1.3.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "twilio": "^4.10.0"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0"
   }
 }

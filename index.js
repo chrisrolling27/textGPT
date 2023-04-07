@@ -55,6 +55,7 @@ async function sendToGPT(message) {
     };
 
     try {
+        // @ts-ignore
         const response = await axios.post(GPT_API_ENDPOINT, data, { headers: headers });
         return response.data.choices[0].text.trim();
     } catch (error) {
