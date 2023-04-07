@@ -5,8 +5,8 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {console.log(`Server running on port ${PORT}`);});
+const PORT = 3000;
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
 
 dotenv.config();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -15,6 +15,16 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const GPT_API_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions';
+
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
+app.post('/message', (req, res) => {
+    const receivedMessage = req.body.Body;
+    console.log('Received SMS message:', receivedMessage);
+    res.status(200).send('received_message!');
+  });
 
 
 
