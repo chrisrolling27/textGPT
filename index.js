@@ -4,6 +4,8 @@ const twilio = require('twilio');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 
+const { MessagingResponse } = require('twilio').twiml;
+
 const app = express();
 const PORT = 3000;
 app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
@@ -21,12 +23,15 @@ app.get('/', (req, res) => {
 });
 
 app.post('/message', (req, res) => {
-    const receivedMessage = req.body.Body;
-    console.log('Received SMS message:', receivedMessage);
-    res.status(200).send('received_message!');
-  });
 
+    console.log(req.body.message);
+    const twiml = new MessagingResponse();
+    twiml.message('The Robots are coming! Head for the hills!!');
+    res.type('text/xml').send(twiml.toString());
 
+    
+
+});
 
 
 app.post('/sms', async (req, res) => {
