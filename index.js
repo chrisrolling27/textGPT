@@ -19,7 +19,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const GPT_API_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions';
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+    res.send('Could this really be...the internet?');
 });
 
 app.post('/message', (req, res) => {
