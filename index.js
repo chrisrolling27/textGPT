@@ -23,14 +23,10 @@ app.get('/', (req, res) => {
 });
 
 app.post('/message', (req, res) => {
-
-    console.log(req.body.message);
+    console.log('here: ', req.body.Body);
     const twiml = new MessagingResponse();
     twiml.message('The Robots are coming! Head for the hills!!');
     res.type('text/xml').send(twiml.toString());
-
-    
-
 });
 
 
