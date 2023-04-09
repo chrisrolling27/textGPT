@@ -1,3 +1,4 @@
+// @ts-nocheck
 const express = require('express');
 const axios = require('axios');
 const twilio = require('twilio');
@@ -36,42 +37,45 @@ app.post('/sms', async (req, res) => {
 
     const gptResponse = await sendToGPT(receivedMessage);
 
-    client.messages
-        .create({
-            body: gptResponse,
-            from: TWILIO_PHONE_NUMBER,
-            to: senderPhoneNumber
-        })
-        .then(() => {
-            res.status(200).send();
-        })
-        .catch((err) => {
-            console.error(err);
-            res.status(500).send();
-        });
+    console.log(gptResponse);
+    // client.messages
+    //     .create({
+    //         body: gptResponse,
+    //         from: TWILIO_PHONE_NUMBER,
+    //         to: senderPhoneNumber
+    //     })
+    //     .then(() => {
+    //         res.status(200).send();
+    //     })
+    //     .catch((err) => {
+    //         console.error(err);
+    //         res.status(500).send();
+    //     });
 });
 
 async function sendToGPT(message) {
-    const prompt = `Texter says: ${message}\nAI Assistant:`;
+    const prompt = `The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: ${message}\nAI:`;
     const headers = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${OPENAI_API_KEY}`
     };
     const data = {
+        model: "text-davinci-003",
         prompt,
+        temperature: 0.9,
         max_tokens: 150,
-        n: 1,
-        stop: null,
-        temperature: 0.8
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0.6,
+        stop: [" Human:", " AI:"]
     };
 
     try {
-        // @ts-ignore
         const response = await axios.post(GPT_API_ENDPOINT, data, { headers: headers });
+        console.log(response.data.choices[0].text.trim());
         return response.data.choices[0].text.trim();
     } catch (error) {
-        console.error(error);
+        //console.error(error);
         return 'Error processing your request.';
     }
 }
-
