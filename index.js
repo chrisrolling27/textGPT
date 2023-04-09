@@ -1,4 +1,3 @@
-// @ts-nocheck
 const express = require('express');
 const axios = require('axios');
 const twilio = require('twilio');
@@ -10,14 +9,15 @@ const { MessagingResponse } = require('twilio').twiml;
 const app = express();
 const PORT = 3000;
 app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
+app.use(express.json());
 
 dotenv.config();
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const GPT_API_ENDPOINT = 'https://api.openai.com/v1/engines/davinci-codex/completions';
+const phonenumber = process.env.phonenumber;
+const openAIkey = process.env.openAIkey;
+const openAIapi = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
 
 app.get('/', (req, res) => {
     res.send('Could this really be...the internet?');
@@ -32,16 +32,19 @@ app.post('/message', (req, res) => {
 
 
 app.post('/sms', async (req, res) => {
-    const receivedMessage = req.body.Body;
+    const receivedQuestion = req.body.Body;
+    console.log(receivedQuestion);
     const senderPhoneNumber = req.body.From;
 
-    const gptResponse = await sendToGPT(receivedMessage);
+    const gptResponse = await sendToGPT(receivedQuestion);
 
     console.log(gptResponse);
+
+    res.status(200).send(gptResponse);
     // client.messages
     //     .create({
     //         body: gptResponse,
-    //         from: TWILIO_PHONE_NUMBER,
+    //         from: phonenumber,
     //         to: senderPhoneNumber
     //     })
     //     .then(() => {
@@ -53,17 +56,16 @@ app.post('/sms', async (req, res) => {
     //     });
 });
 
-async function sendToGPT(message) {
-    const prompt = `The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: ${message}\nAI:`;
+async function sendToGPT(question) {
+    const prompt = `The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: ${question}?\nAI:`;
     const headers = {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_API_KEY}`
+        Authorization: `Bearer ${openAIkey}`
     };
     const data = {
-        model: "text-davinci-003",
-        prompt,
+        prompt: prompt,
         temperature: 0.9,
-        max_tokens: 150,
+        max_tokens: 100,
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0.6,
@@ -71,11 +73,10 @@ async function sendToGPT(message) {
     };
 
     try {
-        const response = await axios.post(GPT_API_ENDPOINT, data, { headers: headers });
-        console.log(response.data.choices[0].text.trim());
+        const response = await axios.post(openAIapi, data, { headers: headers });
         return response.data.choices[0].text.trim();
     } catch (error) {
-        //console.error(error);
+        console.log(error);
         return 'Error processing your request.';
     }
 }
