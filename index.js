@@ -3,7 +3,7 @@ const axios = require('axios');
 const twilio = require('twilio');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
-
+const rateLimit = require('express-rate-limit');
 const { MessagingResponse } = require('twilio').twiml;
 
 const app = express();
@@ -19,9 +19,17 @@ const phonenumber = process.env.phonenumber;
 const openAIkey = process.env.openAIkey;
 const openAIapi = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
 
-app.get('/', (req, res) => {
-    res.send('Could this really be...the internet?');
-});
+const openAIRateLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 15 minutes
+    max: 10, // limit each phone number to 10 requests per windowMs
+    keyGenerator: (req, res) => {
+      return req.body.From;
+    },
+    handler: (req, res) => {
+      res.status(429).send('Too many requests, please try again later');
+    },
+  });
+
 
 app.post('/message', (req, res) => {
     console.log('here: ', req.body.Body);
@@ -29,7 +37,6 @@ app.post('/message', (req, res) => {
     twiml.message('The Robots are coming! Head for the hills!!');
     res.type('text/xml').send(twiml.toString());
 });
-
 
 app.post('/sms', async (req, res) => {
     const receivedQuestion = req.body.Body;
@@ -80,3 +87,5 @@ async function sendToGPT(question) {
         return 'Error processing your request.';
     }
 }
+
+
