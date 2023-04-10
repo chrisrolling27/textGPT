@@ -39,7 +39,7 @@ app.post('/message', (req, res) => {
     res.type('text/xml').send(twiml.toString());
 });
 
-app.post('/sms', async (req, res) => {
+app.post('/sms', openAIRateLimiter, async (req, res) => {
     
     const receivedQuestion = req.body.Body;
     const senderPhoneNumber = req.body.From;
@@ -49,14 +49,25 @@ app.post('/sms', async (req, res) => {
     writeDBmessage(senderPhoneNumber, receivedQuestion, gptResponse);
     console.log(senderPhoneNumber, receivedQuestion, gptResponse);
 
+    client.messages
+        .create({
+            body: gptResponse,
+            from: phonenumber,
+            to: senderPhoneNumber
+        })
+        .then(message => {
+            console.log('Message sent: ' + message.sid);
+        })
+        .catch(err => {
+            console.error('Error sending message: ', err);
+        });
+
     const twiml = new MessagingResponse();
     res.type('text/xml').send(twiml.toString());
-
-    
 });
 
 async function sendToGPT(question) {
-    const prompt = `The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: ${question}?\nAI:`;
+    const prompt = `The following is a conversation with an AI assistant. The assistant is helpful, clever, and prompt.\n\nHuman: ${question}?\nAI:`;
     const headers = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${openAIkey}`
