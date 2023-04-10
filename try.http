@@ -1,4 +1,0 @@
-curl -X POST 'http://localhost:3000/sms' \
--H 'Content-Type: application/x-www-form-urlencoded' \
---data-urlencode 'Body=what was the last question I asked you?' \
---data-urlencode 'From=262-321-9289'
