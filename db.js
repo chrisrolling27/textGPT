@@ -24,6 +24,19 @@ const createTableIfNotExists = () => {
     });
 };
 
+const writeDBmessage = (phone, question, answer) => {
+    const query = `
+    INSERT INTO messages (phone, question, answer)
+    VALUES (?, ?, ?)
+    `;
+
+    db.run(query, [phone, question, answer], function (err) {
+        if (err) {
+            console.error(err.message);
+        }
+    });
+};
+
 const closeDbConnection = () => {
     db.close((err) => {
         if (err) {
@@ -37,6 +50,7 @@ const closeDbConnection = () => {
 module.exports = {
     db,
     createTableIfNotExists,
+    writeDBmessage,
     closeDbConnection
 };
 

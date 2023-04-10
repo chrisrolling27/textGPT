@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
 const { MessagingResponse } = require('twilio').twiml;
-const { db, createTableIfNotExists, closeDbConnection } = require('./db');
+const { db, createTableIfNotExists, writeDBmessage, closeDbConnection } = require('./db');
 
 dotenv.config();
 const app = express();
@@ -40,28 +40,19 @@ app.post('/message', (req, res) => {
 });
 
 app.post('/sms', async (req, res) => {
+    
     const receivedQuestion = req.body.Body;
-    console.log(receivedQuestion);
     const senderPhoneNumber = req.body.From;
 
     const gptResponse = await sendToGPT(receivedQuestion);
 
-    console.log(gptResponse);
+    writeDBmessage(senderPhoneNumber, receivedQuestion, gptResponse);
+    console.log(senderPhoneNumber, receivedQuestion, gptResponse);
 
-    res.status(200).send(gptResponse);
-    // client.messages
-    //     .create({
-    //         body: gptResponse,
-    //         from: phonenumber,
-    //         to: senderPhoneNumber
-    //     })
-    //     .then(() => {
-    //         res.status(200).send();
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         res.status(500).send();
-    //     });
+    const twiml = new MessagingResponse();
+    res.type('text/xml').send(twiml.toString());
+
+    
 });
 
 async function sendToGPT(question) {
