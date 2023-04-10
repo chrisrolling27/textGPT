@@ -5,19 +5,20 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
 const { MessagingResponse } = require('twilio').twiml;
-
-const app = express();
-const PORT = 3000;
-app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
-app.use(express.json());
+const { db, createTableIfNotExists, closeDbConnection } = require('./db');
 
 dotenv.config();
+const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
-
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const phonenumber = process.env.phonenumber;
 const openAIkey = process.env.openAIkey;
 const openAIapi = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+
+const PORT = 3000;
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
+app.use(express.json());
+createTableIfNotExists();
 
 const openAIRateLimiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 15 minutes
@@ -89,3 +90,7 @@ async function sendToGPT(question) {
 }
 
 
+process.on('SIGINT', () => {
+    closeDbConnection();
+    process.exit(0);
+});
