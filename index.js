@@ -9,7 +9,7 @@ const { db, createTableIfNotExists, writeDBmessage, closeDbConnection } = requir
 
 dotenv.config();
 const app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 const phonenumber = process.env.phonenumber;
 const openAIkey = process.env.openAIkey;
@@ -43,11 +43,12 @@ app.post('/sms', openAIRateLimiter, async (req, res) => {
     
     const receivedQuestion = req.body.Body;
     const senderPhoneNumber = req.body.From;
-
     const gptResponse = await sendToGPT(receivedQuestion);
 
     writeDBmessage(senderPhoneNumber, receivedQuestion, gptResponse);
-    console.log(senderPhoneNumber, receivedQuestion, gptResponse);
+    console.log('phone number: ', senderPhoneNumber);
+    console.log('question: ', receivedQuestion);
+    console.log('gptResponse: ', gptResponse);
 
     client.messages
         .create({
@@ -67,7 +68,7 @@ app.post('/sms', openAIRateLimiter, async (req, res) => {
 });
 
 async function sendToGPT(question) {
-    const prompt = `The following is a conversation with an AI assistant. The assistant is helpful, clever, and prompt.\n\nHuman: ${question}?\nAI:`;
+    const prompt = `The following is a conversation with an AI assistant. The assistant is helpful and clever. Please be brief in your responses and remove and redundant filler information or greetings as your response is limited to 100 tokens. \n\nHuman: ${question}?\nAI:`;
     const headers = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${openAIkey}`
@@ -75,7 +76,7 @@ async function sendToGPT(question) {
     const data = {
         prompt: prompt,
         temperature: 0.9,
-        max_tokens: 100,
+        max_tokens: 120,
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0.6,
